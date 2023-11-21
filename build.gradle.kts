@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "at.topc.tado"
-version = "1.0-SNAPSHOT"
+version = System.getenv("BUILD_NUMBER")?.let { "1.0.$it" } ?: "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
