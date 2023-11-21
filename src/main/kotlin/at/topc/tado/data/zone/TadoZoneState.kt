@@ -1,8 +1,8 @@
 package at.topc.tado.data.zone
 
-import at.topc.tado.data.zone.overlay.ITadoOverlayRes
-import at.topc.tado.data.common.typed.ITadoTyped
 import at.topc.tado.data.common.TadoMode
+import at.topc.tado.data.common.typed.ITadoTyped
+import at.topc.tado.data.zone.overlay.ITadoOverlayRes
 import at.topc.tado.data.zone.overlay.TadoOverlayType
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

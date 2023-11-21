@@ -12,9 +12,9 @@ data class TadoEIQTariffReq(
     override val tariffInCents: Double
 ) : TadoEIQTariff() {
     constructor(unit: TadoEIQUnit, startDate: LocalDate, tariffInCents: Double) :
-            this(unit, startDate, null, tariffInCents)
+        this(unit, startDate, null, tariffInCents)
     constructor(unit: TadoEIQUnit, startDate: java.time.LocalDate, tariffInCents: Double) :
-            this(unit, startDate.toKotlinLocalDate(), tariffInCents)
+        this(unit, startDate.toKotlinLocalDate(), tariffInCents)
     constructor(unit: TadoEIQUnit, startDate: java.time.LocalDate, endDate: java.time.LocalDate, tariffInCents: Double) :
-            this(unit, startDate.toKotlinLocalDate(), endDate.toKotlinLocalDate(), tariffInCents)
+        this(unit, startDate.toKotlinLocalDate(), endDate.toKotlinLocalDate(), tariffInCents)
 }

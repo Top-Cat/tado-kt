@@ -5,4 +5,3 @@ data class TadoConfig(
     val email: String,
     val password: String
 )
-

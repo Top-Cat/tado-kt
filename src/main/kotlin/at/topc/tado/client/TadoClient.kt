@@ -154,9 +154,6 @@ class TadoClient(private val config: TadoConfig) : Closeable {
 
         internal val json = Json {
             prettyPrint = true
-            serializersModule = SerializersModule {
-
-            }
         }
     }
 }

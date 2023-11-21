@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class TadoZoneReportDataPoints<T>(
-    override val valueType: String,
+    override val valueType: String
 ) : ITadoZoneReportData {
     override val timeSeriesType = "dataPoints"
     abstract val min: T

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class TadoZoneReportDataIntervals<T>(
-    override val valueType: String,
+    override val valueType: String
 ) : ITadoZoneReportData {
     override val timeSeriesType = "dataIntervals"
     abstract val dataIntervals: List<TadoZoneReportDataInterval<T>>

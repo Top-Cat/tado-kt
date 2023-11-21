@@ -6,4 +6,3 @@ abstract class TadoEIQReading {
     abstract val reading: Int
     abstract val date: LocalDate
 }
-

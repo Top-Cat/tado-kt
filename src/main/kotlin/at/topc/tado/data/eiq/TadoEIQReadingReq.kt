@@ -10,5 +10,5 @@ data class TadoEIQReadingReq(
     override val date: LocalDate
 ) : TadoEIQReading() {
     constructor(reading: Int, date: java.time.LocalDate) :
-            this(reading, date.toKotlinLocalDate())
+        this(reading, date.toKotlinLocalDate())
 }

@@ -9,4 +9,3 @@ import kotlinx.serialization.json.JsonClassDiscriminator
 @Serializable
 @JsonClassDiscriminator("stripeType")
 sealed interface ITadoZoneReportStripe
-

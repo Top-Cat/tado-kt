@@ -1,9 +1,9 @@
 package at.topc.tado.data.zone
 
-import at.topc.tado.data.zone.device.TadoDevice
-import at.topc.tado.data.zone.device.TadoDeviceType
 import at.topc.tado.data.common.feature.BasicTadoFeature
 import at.topc.tado.data.common.feature.TadoZoneOpenWindowDetection
+import at.topc.tado.data.zone.device.TadoDevice
+import at.topc.tado.data.zone.device.TadoDeviceType
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 

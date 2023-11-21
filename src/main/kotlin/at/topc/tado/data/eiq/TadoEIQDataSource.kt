@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class TadoEIQDataSource {
-    @SerialName("meterReadings") METER_READINGS,
-    @SerialName("heatingBills") HEATING_BILLS
+    @SerialName("meterReadings")
+    METER_READINGS,
+    @SerialName("heatingBills")
+    HEATING_BILLS
 }

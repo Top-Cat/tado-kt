@@ -3,9 +3,9 @@ package at.topc.tado
 import at.topc.tado.client.TadoClient
 import at.topc.tado.data.zone.TadoZone
 import at.topc.tado.data.zone.TadoZoneState
-import at.topc.tado.data.zone.report.TadoZoneReport
 import at.topc.tado.data.zone.overlay.ITadoOverlayRes
 import at.topc.tado.data.zone.overlay.TadoOverlayReq
+import at.topc.tado.data.zone.report.TadoZoneReport
 import java.time.LocalDate
 
 class TadoZoneApi(private val tadoClient: TadoClient, tadoHomeApi: TadoHomeApi, zoneId: Int) {
