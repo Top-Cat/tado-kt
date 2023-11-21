@@ -9,7 +9,6 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.Json.Default.serializersModule
-import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.serializer
 import org.apache.http.HttpHeaders
 import org.apache.http.client.config.CookieSpecs

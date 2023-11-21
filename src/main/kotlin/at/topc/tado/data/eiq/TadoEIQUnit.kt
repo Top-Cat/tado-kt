@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 enum class TadoEIQUnit {
     @SerialName("m3")
     METERS_CUBED,
+
     @SerialName("kWh")
     KILOWATT_HOURS
 }
