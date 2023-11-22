@@ -1,20 +1,21 @@
 package at.topc.tado
 
-import at.topc.tado.client.TadoClient
+import at.topc.tado.client.TadoClientWithBase
 import at.topc.tado.data.home.TadoHome
 import at.topc.tado.data.home.TadoHomeState
 import at.topc.tado.data.home.weather.TadoWeather
 import at.topc.tado.data.user.TadoUser
 import at.topc.tado.data.zone.TadoZone
 
-class TadoHomeApi(private val tadoClient: TadoClient, homeId: Int) {
-    internal val homeUri = "/homes/$homeId"
-    fun zone(id: Int) = TadoZoneApi(tadoClient, this, id)
-    fun energyIQ() = TadoEIQApi(tadoClient, this)
+class TadoHomeApi(client: TadoClientWithBase, homeId: Int) {
+    private val baseUri = "/homes/$homeId"
+    private val tadoClient = client.plusBase(baseUri)
+    fun zone(id: Int) = TadoZoneApi(tadoClient, id)
+    fun energyIQ() = TadoEIQApi(tadoClient, baseUri)
 
-    suspend fun getInfo() = tadoClient.get<TadoHome>(homeUri)
-    suspend fun getZones() = tadoClient.get<List<TadoZone>>("$homeUri/zones")
-    suspend fun getState() = tadoClient.get<TadoHomeState>("$homeUri/state")
-    suspend fun getWeather() = tadoClient.get<TadoWeather>("$homeUri/weather")
-    suspend fun getUsers() = tadoClient.get<List<TadoUser>>("$homeUri/users")
+    suspend fun getInfo() = tadoClient.get<TadoHome>("")
+    suspend fun getZones() = tadoClient.get<List<TadoZone>>("/zones")
+    suspend fun getState() = tadoClient.get<TadoHomeState>("/state")
+    suspend fun getWeather() = tadoClient.get<TadoWeather>("/weather")
+    suspend fun getUsers() = tadoClient.get<List<TadoUser>>("/users")
 }
