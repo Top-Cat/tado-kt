@@ -38,6 +38,12 @@ ktlint {
 }
 
 publishing {
+    publications {
+        create<MavenPublication>("tadokt") {
+            from(components["java"])
+        }
+    }
+
     repositories {
         maven {
             name = "reposilite"
