@@ -39,8 +39,6 @@ class TadoClient(private val config: TadoConfig) : Closeable {
     private val renewBeforeExpiryDuration = config.renewBeforeExpiry.seconds
 
     private suspend fun tokenRequest(vararg formData: BasicNameValuePair) {
-        println("tokenRequest ${formData.size}")
-
         val httpPost = HttpPost("$TADO_AUTH/oauth/token")
         httpPost.entity = UrlEncodedFormEntity(
             listOf(
