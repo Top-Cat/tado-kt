@@ -8,6 +8,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import mu.KLogging
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpResponse
 import org.apache.http.HttpStatus
@@ -51,6 +52,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         val response = client.execute(httpPost)
         val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
         tokens = TadoTokens(json.decodeFromString<TokenResponse>(jsonResponse))
+        logger.debug { "New token ${tokens?.expiry}" }
     }
 
     private suspend fun getToken() =
@@ -70,8 +72,10 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         tokenMutex.withLock {
             tokens.let { t ->
                 if (t == null) {
+                    logger.debug { "Getting token with login" }
                     getToken()
                 } else if (t.expiry < Clock.System.now().plus(renewBeforeExpiryDuration)) {
+                    logger.debug { "Refreshing token" }
                     refreshToken()
                 }
             }
@@ -80,42 +84,52 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         return tokens!!.accessToken
     }
 
-    suspend fun <T> get(s: KSerializer<T>, url: String) =
-        HttpGet(url)
+    suspend fun <T> get(s: KSerializer<T>, url: String): T {
+        logger.debug { "GET $url" }
+        return HttpGet(url)
             .apply {
                 addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
             }
             .let { httpGet -> client.execute(httpGet) }
             .let { response -> parseResponse(s, null, response) }
+    }
 
-    suspend fun <T, U> post(bs: KSerializer<T>, s: KSerializer<U>, url: String, body: T) =
-        HttpPost(url)
+    suspend fun <T, U> post(bs: KSerializer<T>, s: KSerializer<U>, url: String, body: T): U {
+        logger.debug { "POST $url" }
+        return HttpPost(url)
             .apply {
                 addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
                 entity = StringEntity(json.encodeToString(bs, body), ContentType.APPLICATION_JSON)
             }
             .let { httpPut -> client.execute(httpPut) }
             .let { response -> parseResponse(s, body, response) }
+    }
 
-    suspend fun <T, U> put(bs: KSerializer<T>, s: KSerializer<U>, url: String, body: T) =
-        HttpPut(url)
+    suspend fun <T, U> put(bs: KSerializer<T>, s: KSerializer<U>, url: String, body: T): U {
+        logger.debug { "PUT $url" }
+        return HttpPut(url)
             .apply {
                 addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
                 entity = StringEntity(json.encodeToString(bs, body), ContentType.APPLICATION_JSON)
             }
             .let { httpPut -> client.execute(httpPut) }
             .let { response -> parseResponse(s, body, response) }
+    }
 
-    suspend fun delete(url: String): Unit =
+    suspend fun delete(url: String) {
+        logger.debug { "DELETE $url" }
         HttpDelete(url)
             .apply {
                 addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
             }
             .let { httpPut -> client.execute(httpPut) }
+    }
 
     private fun <T, U> parseResponse(s: KSerializer<U>, body: T, res: HttpResponse): U {
         val text = EntityUtils.toString(res.entity, StandardCharsets.UTF_8)
         val code = res.statusLine.statusCode
+
+        logger.debug { "Response $code - $text" }
 
         return if (code != HttpStatus.SC_OK) {
             throw TadoRequestException(text, code, body)
@@ -132,7 +146,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         client.close()
     }
 
-    companion object {
+    companion object : KLogging() {
         const val TADO_API = "https://my.tado.com/api/v2"
         const val TADO_AUTH = "https://auth.tado.com"
 
