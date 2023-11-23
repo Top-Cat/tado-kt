@@ -50,6 +50,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         )
 
         val response = client.execute(httpPost)
+        logger.debug { "Token response ${response.statusLine.statusCode}" }
         val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
         tokens = TadoTokens(json.decodeFromString<TokenResponse>(jsonResponse))
         logger.debug { "New token ${tokens?.expiry}" }
@@ -86,43 +87,63 @@ class TadoClient(private val config: TadoConfig) : Closeable {
 
     suspend fun <T> get(s: KSerializer<T>, url: String): T {
         logger.debug { "GET $url" }
-        return HttpGet(url)
-            .apply {
-                addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
-            }
-            .let { httpGet -> client.execute(httpGet) }
-            .let { response -> parseResponse(s, null, response) }
+        return try {
+            HttpGet(url)
+                .apply {
+                    addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
+                }
+                .let { httpGet -> client.execute(httpGet) }
+                .let { response -> parseResponse(s, null, response) }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during GET $url" }
+            throw e
+        }
     }
 
     suspend fun <T, U> post(bs: KSerializer<T>, s: KSerializer<U>, url: String, body: T): U {
         logger.debug { "POST $url" }
-        return HttpPost(url)
-            .apply {
-                addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
-                entity = StringEntity(json.encodeToString(bs, body), ContentType.APPLICATION_JSON)
-            }
-            .let { httpPut -> client.execute(httpPut) }
-            .let { response -> parseResponse(s, body, response) }
+        return try {
+            HttpPost(url)
+                .apply {
+                    addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
+                    entity = StringEntity(json.encodeToString(bs, body), ContentType.APPLICATION_JSON)
+                }
+                .let { httpPut -> client.execute(httpPut) }
+                .let { response -> parseResponse(s, body, response) }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during POST $url" }
+            throw e
+        }
     }
 
     suspend fun <T, U> put(bs: KSerializer<T>, s: KSerializer<U>, url: String, body: T): U {
         logger.debug { "PUT $url" }
-        return HttpPut(url)
-            .apply {
-                addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
-                entity = StringEntity(json.encodeToString(bs, body), ContentType.APPLICATION_JSON)
-            }
-            .let { httpPut -> client.execute(httpPut) }
-            .let { response -> parseResponse(s, body, response) }
+        return try {
+            HttpPut(url)
+                .apply {
+                    addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
+                    entity = StringEntity(json.encodeToString(bs, body), ContentType.APPLICATION_JSON)
+                }
+                .let { httpPut -> client.execute(httpPut) }
+                .let { response -> parseResponse(s, body, response) }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during PUT $url" }
+            throw e
+        }
     }
 
     suspend fun delete(url: String) {
         logger.debug { "DELETE $url" }
-        HttpDelete(url)
-            .apply {
-                addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
-            }
-            .let { httpPut -> client.execute(httpPut) }
+        try {
+            HttpDelete(url)
+                .apply {
+                    addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${tokenForGet()}")
+                }
+                .let { httpPut -> client.execute(httpPut) }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during DELETE $url" }
+            throw e
+        }
     }
 
     private fun <T, U> parseResponse(s: KSerializer<U>, body: T, res: HttpResponse): U {
