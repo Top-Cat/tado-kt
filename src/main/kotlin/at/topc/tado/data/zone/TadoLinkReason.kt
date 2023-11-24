@@ -3,4 +3,7 @@ package at.topc.tado.data.zone
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TadoLink(val state: TadoLinkState, val reason: TadoLinkReason? = null)
+data class TadoLinkReason(
+    val code: String,
+    val title: String
+)
