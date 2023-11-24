@@ -18,8 +18,8 @@ data class TadoZoneState(
     val overlayType: TadoOverlayType?,
     val overlay: ITadoOverlayRes?,
     val openWindow: JsonElement,
-    val nextScheduleChange: Instant?,
-    val nextTimeBlock: TadoTimeBlock,
+    val nextScheduleChange: TadoZoneScheduleChange?,
+    val nextTimeBlock: TadoTimeBlock?,
     val link: TadoLink,
     val activityDataPoints: Map<String, ITadoTyped>,
     val sensorDataPoints: Map<String, ITadoTyped>
