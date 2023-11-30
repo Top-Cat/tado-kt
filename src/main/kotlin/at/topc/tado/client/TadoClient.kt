@@ -152,7 +152,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
 
         logger.debug { "Response $code - $text" }
 
-        return if (code != HttpStatus.SC_OK) {
+        return if (!goodResponseCodes.contains(code)) {
             throw TadoRequestException(text, code, body)
         } else {
             try {
@@ -170,6 +170,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
     companion object : KLogging() {
         const val TADO_API = "https://my.tado.com/api/v2"
         const val TADO_AUTH = "https://auth.tado.com"
+        val goodResponseCodes = setOf(HttpStatus.SC_OK, HttpStatus.SC_CREATED)
 
         internal val json = Json {
             prettyPrint = true
