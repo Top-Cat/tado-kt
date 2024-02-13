@@ -16,5 +16,5 @@ enum class TadoDeviceType {
     VA01, // Smart Radiator Thermostat v1
     BU01, // Extension kit v1
     BU02, // Extension kit v2
-    WR01, // Smart AC Control v1
+    WR01 // Smart AC Control v1
 }
