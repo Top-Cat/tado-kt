@@ -13,6 +13,7 @@ data class TadoDevice(
     val mountingState: TadoStateWithTime<TadoDeviceMountingStateEnum>? = null,
     val mountingStateWithError: TadoDeviceMountingStateEnum? = null,
     val batteryState: TadoDeviceBatteryState,
+    val orientation: TadoDeviceOrientation? = null,
     val childLockEnabled: Boolean? = null,
     val duties: Set<TadoDeviceDuty>
 )
