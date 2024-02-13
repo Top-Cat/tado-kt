@@ -1,5 +1,5 @@
 package at.topc.tado.data.zone
 
 enum class TadoZoneType {
-    HEATING
+    HEATING, HOT_WATER
 }

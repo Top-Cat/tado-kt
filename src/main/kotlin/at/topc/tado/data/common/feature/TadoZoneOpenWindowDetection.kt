@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TadoZoneOpenWindowDetection(
     override val supported: Boolean,
-    override val enabled: Boolean,
-    val timeoutInSeconds: Int
+    override val enabled: Boolean? = null,
+    val timeoutInSeconds: Int? = null
 ) : ITadoFeature

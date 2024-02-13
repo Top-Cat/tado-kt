@@ -12,8 +12,9 @@ data class TadoDevice(
     val characteristics: TadoDeviceCharacteristics,
     val mountingState: TadoStateWithTime<TadoDeviceMountingStateEnum>? = null,
     val mountingStateWithError: TadoDeviceMountingStateEnum? = null,
-    val batteryState: TadoDeviceBatteryState,
+    val batteryState: TadoDeviceBatteryState? = null,
     val orientation: TadoDeviceOrientation? = null,
     val childLockEnabled: Boolean? = null,
+    val isDriverConfigured: Boolean? = null,
     val duties: Set<TadoDeviceDuty>
 )

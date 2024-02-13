@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BasicTadoFeature(
     override val supported: Boolean,
-    override val enabled: Boolean
+    override val enabled: Boolean? = null
 ) : ITadoFeature
