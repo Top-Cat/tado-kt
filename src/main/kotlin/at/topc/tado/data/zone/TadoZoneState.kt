@@ -21,6 +21,7 @@ data class TadoZoneState(
     val nextScheduleChange: TadoZoneScheduleChange?,
     val nextTimeBlock: TadoTimeBlock?,
     val link: TadoLink,
+    val runningOfflineSchedule: Boolean,
     val activityDataPoints: Map<String, ITadoTyped>,
     val sensorDataPoints: Map<String, ITadoTyped>
 )
