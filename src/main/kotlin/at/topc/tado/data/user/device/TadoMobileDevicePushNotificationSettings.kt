@@ -10,5 +10,7 @@ data class TadoMobileDevicePushNotificationSettings(
     val openWindowReminder: Boolean,
     val energySavingsReportReminder: Boolean,
     val incidentDetection: Boolean,
-    val energyIqReminder: Boolean
+    val energyIqReminder: Boolean,
+    val tariffHighPriceAlert: Boolean,
+    val tariffLowPriceAlert: Boolean
 )
