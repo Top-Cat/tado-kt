@@ -14,5 +14,5 @@ data class TokenResponse(
     @SerialName("expires_in")
     val expiresIn: Int,
     val scope: String,
-    val jti: String
+    val jti: String? = null
 )
