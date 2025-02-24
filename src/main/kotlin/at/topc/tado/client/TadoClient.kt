@@ -39,7 +39,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
     private var tokens: TadoTokens? = null
     private val renewBeforeExpiryDuration = config.renewBeforeExpiry.seconds
 
-    private suspend fun tokenRequest(vararg formData: BasicNameValuePair) {
+    private suspend fun tokenRequest(vararg formData: BasicNameValuePair): Boolean {
         val httpPost = HttpPost("$TADO_AUTH/oauth/token")
         httpPost.entity = UrlEncodedFormEntity(
             listOf(
@@ -52,8 +52,15 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         val response = client.execute(httpPost)
         logger.debug { "Token response ${response.statusLine.statusCode}" }
         val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
-        tokens = TadoTokens(json.decodeFromString<TokenResponse>(jsonResponse))
-        logger.debug { "New token ${tokens?.expiry}" }
+
+        return if (response.statusLine.statusCode == 200) {
+            tokens = TadoTokens(json.decodeFromString<TokenResponse>(jsonResponse))
+            logger.debug { "New token ${tokens?.expiry}" }
+            true
+        } else {
+            logger.warn { "Failed to fetch tado token ($jsonResponse)" }
+            false
+        }
     }
 
     private suspend fun getToken() =
@@ -67,11 +74,14 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         tokenRequest(
             BasicNameValuePair("grant_type", "refresh_token"),
             BasicNameValuePair("refresh_token", tokens?.refreshToken)
-        )
+        ).let {
+            // Use password again if refreshing fails
+            if (!it) getToken()
+        }
 
     private suspend fun tokenForGet(): String {
         tokenMutex.withLock {
-            tokens.let { t ->
+            tokens.also { t ->
                 if (t == null) {
                     logger.debug { "Getting token with login" }
                     getToken()
