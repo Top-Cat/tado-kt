@@ -116,7 +116,13 @@ class TadoClient(private val config: TadoConfig) : Closeable {
             BasicNameValuePair("refresh_token", tokens?.refreshToken)
         ).let {
             // Use password again if refreshing fails
-            if (!it) deviceCode().await()
+            if (!it) {
+                deviceCode().await()
+            } else {
+                tokens?.let { token ->
+                    config.persistRefreshToken?.invoke(token.refreshToken)
+                }
+            }
         }
 
     private suspend fun tokenForGet(): String {
