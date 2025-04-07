@@ -5,5 +5,5 @@ data class TadoConfig(
     val refreshToken: String? = null,
     val oauthCreds: TadoOauthCreds = TadoOauthCreds.Login,
     val renewBeforeExpiry: Int = 20,
-    val persistRefreshToken: ((String) -> Unit)? = null
+    val persistRefreshToken: (suspend (String) -> Unit)? = null
 )
