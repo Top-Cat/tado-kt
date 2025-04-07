@@ -87,7 +87,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
                 val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
                 val codeResponse = json.decodeFromString<DeviceCodeResponse>(jsonResponse)
 
-                logger.info { "Visit ${codeResponse.verificationUriComplete} to complete tado login" }
+                logger.info { "Visit ${codeResponse.verificationUriComplete} to complete tado login for ${config.email}" }
 
                 val waitUntil = Clock.System.now().plus(codeResponse.expiresIn.seconds)
                 while (Clock.System.now() < waitUntil) {
