@@ -1,8 +1,13 @@
 package at.topc.tado.client
 
 import at.topc.tado.config.TadoConfig
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -40,7 +45,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
     private val renewBeforeExpiryDuration = config.renewBeforeExpiry.seconds
 
     private suspend fun tokenRequest(vararg formData: BasicNameValuePair): Boolean {
-        val httpPost = HttpPost("$TADO_AUTH/oauth/token")
+        val httpPost = HttpPost("$TADO_AUTH/oauth2/token")
         httpPost.entity = UrlEncodedFormEntity(
             listOf(
                 BasicNameValuePair("client_id", config.oauthCreds.clientId),
@@ -53,7 +58,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         logger.debug { "Token response ${response.statusLine.statusCode}" }
         val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
 
-        return if (response.statusLine.statusCode == 200) {
+        return if (response.statusLine.statusCode == HttpStatus.SC_OK) {
             tokens = TadoTokens(json.decodeFromString<TokenResponse>(jsonResponse))
             logger.debug { "New token ${tokens?.expiry}" }
             true
@@ -63,12 +68,41 @@ class TadoClient(private val config: TadoConfig) : Closeable {
         }
     }
 
-    private suspend fun getToken() =
-        tokenRequest(
-            BasicNameValuePair("grant_type", "password"),
-            BasicNameValuePair("username", config.email),
-            BasicNameValuePair("password", config.password)
-        )
+    private suspend fun deviceCode(): Deferred<Unit> {
+        return withContext(Dispatchers.Default) {
+            async {
+                val httpPost = HttpPost("$TADO_AUTH/oauth2/device_authorize")
+                httpPost.entity = UrlEncodedFormEntity(
+                    listOf(
+                        BasicNameValuePair("client_id", config.oauthCreds.clientId),
+                        BasicNameValuePair("client_secret", config.oauthCreds.clientSecret),
+                        BasicNameValuePair("scope", "offline_access")
+                    )
+                )
+
+                val response = client.execute(httpPost)
+                logger.debug { "Device code response ${response.statusLine.statusCode}" }
+                val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
+                val codeResponse = json.decodeFromString<DeviceCodeResponse>(jsonResponse)
+
+                logger.info { "Visit ${codeResponse.verificationUriComplete} to complete tado login" }
+
+                val waitUntil = Clock.System.now().plus(codeResponse.expiresIn.seconds)
+                while (Clock.System.now() < waitUntil) {
+                    delay(codeResponse.interval.seconds)
+
+                    if (
+                        tokenRequest(
+                            BasicNameValuePair("grant_type", "urn:ietf:params:oauth:grant-type:device_code"), // WTAF tado?
+                            BasicNameValuePair("device_code", codeResponse.deviceCode)
+                        )
+                    ) {
+                        break
+                    }
+                }
+            }
+        }
+    }
 
     private suspend fun refreshToken() =
         tokenRequest(
@@ -76,7 +110,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
             BasicNameValuePair("refresh_token", tokens?.refreshToken)
         ).let {
             // Use password again if refreshing fails
-            if (!it) getToken()
+            if (!it) deviceCode().await()
         }
 
     private suspend fun tokenForGet(): String {
@@ -84,7 +118,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
             tokens.also { t ->
                 if (t == null) {
                     logger.debug { "Getting token with login" }
-                    getToken()
+                    deviceCode().await()
                 } else if (t.expiry < Clock.System.now().plus(renewBeforeExpiryDuration)) {
                     logger.debug { "Refreshing token" }
                     refreshToken()
@@ -179,7 +213,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
 
     companion object : KLogging() {
         const val TADO_API = "https://my.tado.com/api/v2"
-        const val TADO_AUTH = "https://auth.tado.com"
+        const val TADO_AUTH = "https://login.tado.com"
         val goodResponseCodes = setOf(HttpStatus.SC_OK, HttpStatus.SC_CREATED)
 
         internal val json = Json {
