@@ -41,7 +41,9 @@ class TadoClient(private val config: TadoConfig) : Closeable {
     }.build().apply { start() }
 
     private val tokenMutex = Mutex()
-    private var tokens: TadoTokens? = null
+    private var tokens: TadoTokens? = config.refreshToken?.let {
+        TadoTokens("", config.refreshToken, Clock.System.now())
+    }
     private val renewBeforeExpiryDuration = config.renewBeforeExpiry.seconds
 
     private suspend fun tokenRequest(vararg formData: BasicNameValuePair): Boolean {
@@ -97,6 +99,10 @@ class TadoClient(private val config: TadoConfig) : Closeable {
                             BasicNameValuePair("device_code", codeResponse.deviceCode)
                         )
                     ) {
+                        tokens?.let {
+                            config.persistRefreshToken?.invoke(it.refreshToken)
+                        }
+
                         break
                     }
                 }
