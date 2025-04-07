@@ -50,7 +50,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
             listOf(
                 BasicNameValuePair("client_id", config.oauthCreds.clientId),
                 BasicNameValuePair("client_secret", config.oauthCreds.clientSecret),
-                BasicNameValuePair("scope", "home.user")
+                BasicNameValuePair("scope", "home.user offline_access")
             ).plus(formData)
         )
 
@@ -76,7 +76,7 @@ class TadoClient(private val config: TadoConfig) : Closeable {
                     listOf(
                         BasicNameValuePair("client_id", config.oauthCreds.clientId),
                         BasicNameValuePair("client_secret", config.oauthCreds.clientSecret),
-                        BasicNameValuePair("scope", "offline_access")
+                        BasicNameValuePair("scope", "home.user offline_access")
                     )
                 )
 
