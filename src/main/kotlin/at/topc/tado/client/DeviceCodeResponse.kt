@@ -15,5 +15,5 @@ data class DeviceCodeResponse(
     @SerialName("verification_uri")
     val verificationUri: String,
     @SerialName("verification_uri_complete")
-    val verificationUriComplete: String,
+    val verificationUriComplete: String
 )
