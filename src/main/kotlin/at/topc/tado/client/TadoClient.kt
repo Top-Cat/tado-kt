@@ -3,11 +3,13 @@ package at.topc.tado.client
 import at.topc.tado.config.TadoConfig
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.Clock
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -87,7 +89,15 @@ class TadoClient(private val config: TadoConfig) : Closeable {
                 val jsonResponse = EntityUtils.toString(response.entity, StandardCharsets.UTF_8)
                 val codeResponse = json.decodeFromString<DeviceCodeResponse>(jsonResponse)
 
-                logger.info { "Visit ${codeResponse.verificationUriComplete} to complete tado login for ${config.email}" }
+                try {
+                    withTimeout(5000) {
+                        config.deviceCodeHandler?.invoke(codeResponse) ?: run {
+                            logger.info { "Visit ${codeResponse.verificationUriComplete} to complete tado login for ${config.email}" }
+                        }
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    logger.warn { "Timed out in deviceCodeHandler" }
+                }
 
                 val waitUntil = Clock.System.now().plus(codeResponse.expiresIn.seconds)
                 while (Clock.System.now() < waitUntil) {
@@ -100,7 +110,13 @@ class TadoClient(private val config: TadoConfig) : Closeable {
                         )
                     ) {
                         tokens?.let {
-                            config.persistRefreshToken?.invoke(it.refreshToken)
+                            try {
+                                withTimeout(5000) {
+                                    config.persistRefreshToken?.invoke(it.refreshToken)
+                                }
+                            } catch (e: TimeoutCancellationException) {
+                                logger.warn { "Timed out in persistRefreshToken (deviceCode)" }
+                            }
                         }
 
                         break
@@ -120,7 +136,13 @@ class TadoClient(private val config: TadoConfig) : Closeable {
                 deviceCode().await()
             } else {
                 tokens?.let { token ->
-                    config.persistRefreshToken?.invoke(token.refreshToken)
+                    try {
+                        withTimeout(5000) {
+                            config.persistRefreshToken?.invoke(token.refreshToken)
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        logger.warn { "Timed out in persistRefreshToken (refreshToken)" }
+                    }
                 }
             }
         }
