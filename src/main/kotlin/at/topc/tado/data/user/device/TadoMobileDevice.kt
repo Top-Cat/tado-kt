@@ -7,6 +7,6 @@ data class TadoMobileDevice(
     val name: String,
     val id: Int,
     val settings: TadoMobileDeviceSettings,
-    val location: TadoMobileDeviceLocation,
+    val location: TadoMobileDeviceLocation? = null,
     val deviceMetadata: TadoMobileDeviceMetadata
 )
