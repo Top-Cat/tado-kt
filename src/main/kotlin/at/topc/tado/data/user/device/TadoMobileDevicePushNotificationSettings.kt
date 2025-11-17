@@ -12,5 +12,6 @@ data class TadoMobileDevicePushNotificationSettings(
     val incidentDetection: Boolean,
     val energyIqReminder: Boolean,
     val tariffHighPriceAlert: Boolean,
-    val tariffLowPriceAlert: Boolean
+    val tariffLowPriceAlert: Boolean,
+    val smartReminders: Boolean? = null
 )
