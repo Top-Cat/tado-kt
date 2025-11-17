@@ -7,5 +7,6 @@ data class TadoMobileDeviceSettings(
     val geoTrackingEnabled: Boolean,
     val specialOffersEnabled: Boolean,
     val onDemandLogRetrievalEnabled: Boolean,
+    val smartRemindersInAppEnabled: Boolean? = null,
     val pushNotifications: TadoMobileDevicePushNotificationSettings? = null
 )
